@@ -8,7 +8,12 @@ import serial
 import time
 
 # Definições globais
-ser = serial.Serial('/dev/ttyACM0', 9600)
+s = serial.Serial('/dev/ttyACM0', 9600) # iniciar a serial faz o arduino resetar
+time.sleep(3) # é preciso esperar o arduino voltar o reset
+for i in range(1000):
+	resp = s.write(str(i%5).encode())
+	print('Resposta:',resp)
+	s.flush()
+	time.sleep(1)
+s.close()
 
-ser.write(str('3').encode())
-ser.flush()
