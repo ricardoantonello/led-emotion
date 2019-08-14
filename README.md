@@ -1,6 +1,8 @@
 # Led Emotion / Emoções em LED  
 Analisa a imagem com um Jetson Nano e comunica com um Arduíno para expressar uma cor na fita de leds para cada emoção (alegria, tristesa, raiva, etc)  
 
+
+# Comunicação Serial (PC ou Jetson Nano) <-> (Arduino)   
 ## Lições aprendidas  
 Após iniciar uma porta serial via python o arduíno reseta e é preciso esperar voltar para enviar mensagens via serial.  
 
@@ -33,3 +35,12 @@ if(comando_serial==0){
   Serial.print("ERRO: comando serial desconhecido! Recebido: ");   
   Serial.println(comando_serial);   
 }  
+
+# Reconhecimento Facial de Emoções / Emotion Detection  
+Fonte: https://towardsdatascience.com/face-detection-recognition-and-emotion-detection-in-8-lines-of-code-b2ce32d4d5de  
+
+
+
+
+
+
