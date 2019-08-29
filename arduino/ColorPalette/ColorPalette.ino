@@ -5,13 +5,15 @@
 #include <FastLED.h>
 
 #define LED_PIN     8
-#define NUM_LEDS    60
-#define BRIGHTNESS  64
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER GRB
+#define UPDATES_PER_SECOND 100
+
+#define NUM_LEDS 264 //nao consegui transformar em variavel para mudar via serial no python....
+int BRIGHTNESS = 120; //era constante alterei pra variavel para poder mudar por serial vindo do python
+
 CRGB leds[NUM_LEDS];
 
-#define UPDATES_PER_SECOND 100
 
 // This example shows several ways to set up and use 'palettes' of colors
 // with FastLED.
@@ -151,6 +153,21 @@ void ChangePalettePeriodically()
     SetupCor(86,96,76); /*Verde*/
   }else if(comando_serial==4){
     SetupCor(160,120,170); /*Azul*/ 
+  }else if(comando_serial==5){
+    SetupBlackAllPalette(); /*Desligados*/ 
+    
+  
+  //NAO FUNCIONOU
+  }else if(comando_serial==11){ //aumenta brilho//NAO FUNCIONOU
+    BRIGHTNESS=BRIGHTNESS+50; //NAO FUNCIONOU
+    //FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+    //FastLED.setBrightness(  BRIGHTNESS );    
+  }else if(comando_serial==12){ //diminui brilho
+    BRIGHTNESS=BRIGHTNESS-50;
+    //FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+    //FastLED.setBrightness(  BRIGHTNESS );    
+  
+  
   }else{
     Serial.print("ERRO: comando serial desconhecido! Recebido: "); 
     Serial.println(comando_serial); 
@@ -179,6 +196,11 @@ void SetupBlackAndWhiteStripedPalette()
     currentPalette[8] = CRGB::White;
     currentPalette[12] = CRGB::White;
     
+}
+
+void SetupBlackAllPalette() //todos desligados
+{
+    fill_solid( currentPalette, 16, CRGB::Black);
 }
 
 // This function sets up a palette of purple and green stripes.

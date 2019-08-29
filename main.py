@@ -37,6 +37,7 @@ from inference import Network
 
 # Definições globais
 s = serial.Serial('/dev/ttyACM0', 9600) # iniciar a serial faz o arduino resetar
+#s = serial.Serial('/dev/ttyUSB0', 9600) # iniciar a serial faz o arduino resetar
 time.sleep(3) # é preciso esperar o arduino voltar o reset
 
 def build_argparser():
@@ -85,7 +86,8 @@ def performance_counts(perf_count):
 def ssd_maior_rosto(frame, result):
     primeiro = 1
     prob_temp = 0
-    for obj in result[0][0]:
+    
+    for obj in result[0][0]: 
         # Draw bounding box for object when it's probability is more than
         #  the specified threshold
         if obj[2] > prob_threshold and (primeiro == 1 or obj[2]>prob_temp):
@@ -94,9 +96,10 @@ def ssd_maior_rosto(frame, result):
             ymin = int(obj[4] * initial_h)
             xmax = int(obj[5] * initial_w)
             ymax = int(obj[6] * initial_h)
-            cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 55, 255), 1)
-        prob_temp = obj[2] # será probabilidade anterior
+            prob_temp = obj[2] # será probabilidade anterior
+    
     if primeiro == 0:    
+        cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 55, 255), 4)
         return frame[ymin:ymax, xmin:xmax]
     else:
         return frame
@@ -126,6 +129,11 @@ def ssd_out(frame, result):
 
 
 def main():
+    ###Manda para arduino número de leds
+    resp = s.write(str(30).encode())
+    s.flush()
+
+    
     """
     Load the network and parse the SSD output.
 
@@ -183,7 +191,7 @@ def main():
         flag, frame = cap.read()
         if not flag:
             break
-        key_pressed = cv2.waitKey(60)
+        #key_pressed = cv2.waitKey(1)
         # Start async inference
         image = cv2.resize(frame, (w1, h1))
         # Change data layout from HWC to CHW
@@ -204,7 +212,12 @@ def main():
             frame, current_count = ssd_out(frame, result1)
             maior_rosto = ssd_maior_rosto(frame,result1)
             #cv2.imshow('Frame111',maior_rosto)
-            maior_rosto = cv2.resize(maior_rosto, (w2, h2))
+            try:
+               maior_rosto = cv2.resize(maior_rosto, (w2, h2))
+            except:
+               print('w2',w2,'    h2',h2)
+               print('Erro na função resize')	
+               continue
             # Change data layout from HWC to CHW
             maior_rosto = maior_rosto.transpose((2, 0, 1))
             maior_rosto = maior_rosto.reshape((n2, c2, h2, w2))
@@ -215,20 +228,20 @@ def main():
                 r2 = infer_network2.get_output(cur_request_id2)
                 #print('result 2', r2)
                     
-            
                 inf_time_message = "Tempo de processamento: {:.3f}ms"\
                                .format(det_time * 1000) # inference time
                 cv2.putText(frame, inf_time_message, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.5, (200, 10, 10), 1)
-                
                 if r2[0][0][0][0]>0.6:
-                    cv2.putText(frame, 'Normal', (15, 115), cv2.FONT_HERSHEY_PLAIN, 0.5, (0, 255, 0), 3)
+                    cv2.putText(frame, 'Normal', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
+                    resp = s.write(str(5).encode()) #desliga os leds quando alguem estiver NORMAL 
+                    s.flush()
                 elif r2[0][1][0][0]>0.6:
                     cv2.putText(frame, 'Feliz', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
-                    resp = s.write(str(1).encode())
+                    resp = s.write(str(2).encode())
                     s.flush()
                 elif r2[0][2][0][0]>0.6:
                     cv2.putText(frame, 'Triste', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
-                    resp = s.write(str(2).encode())
+                    resp = s.write(str(4).encode())
                     s.flush()
                 elif r2[0][3][0][0]>0.6:
                     cv2.putText(frame, 'Surpreso', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
@@ -236,7 +249,7 @@ def main():
                     s.flush()
                 elif r2[0][4][0][0]>0.6:
                     cv2.putText(frame, 'Bravo', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
-                    resp = s.write(str(4).encode())
+                    resp = s.write(str(1).encode())
                     s.flush()
                 else:
                     resp = s.write(str(0).encode())
@@ -265,13 +278,30 @@ def main():
 
             #last_count = current_count
 
-            if key_pressed == 27:
-                break
+            #if key_pressed == 27:
+            #    break
 		
-        cv2.imshow('Frame',frame)
+        frame = cv2.resize(frame, (1440,900))
+        window_name = "Leds"
+        cv2.namedWindow(window_name, flags=cv2.WND_PROP_FULLSCREEN);
+        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.imshow(window_name, frame) 
+        #cv2.namedWindow("Frame", cv2.WINDOW_NORMAL);
+        #cv2.setWindowProperty("Frame", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN);
+        #cv2.imshow('Frame',frame)
+                
         # Press Q on keyboard to  exit
-        if cv2.waitKey(25) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+          print('Saindo...')
           break
+        if cv2.waitKey(1) & 0xFF == ord('w'):
+          resp = s.write(str(11).encode())
+          s.flush()
+          print('Led power +')
+        if cv2.waitKey(1) & 0xFF == ord('s'):
+          resp = s.write(str(12).encode())
+          s.flush()
+          print('Led power -')
           
         if single_image_mode:
             cv2.imwrite('output_image.jpg', frame)
