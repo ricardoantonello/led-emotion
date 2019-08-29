@@ -90,18 +90,22 @@ def ssd_maior_rosto(frame, result):
     for obj in result[0][0]: 
         # Draw bounding box for object when it's probability is more than
         #  the specified threshold
-        if obj[2] > prob_threshold and (primeiro == 1 or obj[2]>prob_temp):
+        #if obj[2] > prob_threshold and (primeiro == 1 or obj[2]>prob_temp):
+        if obj[2] > prob_threshold and (primeiro == 1 or (obj[5]*initial_w-obj[3]*initial_w)>prob_temp): #pega o rosto com largura maior
             primeiro = 0
             xmin = int(obj[3] * initial_w)
             ymin = int(obj[4] * initial_h)
             xmax = int(obj[5] * initial_w)
             ymax = int(obj[6] * initial_h)
-            prob_temp = obj[2] # será probabilidade anterior
-    
-    if primeiro == 0:    
-        cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 55, 255), 4)
+            prob_temp = (obj[5]*initial_w-obj[3]*initial_w) # largura do rosto maior que 100 pixels
+            #print(prob_temp, obj[5], obj[3], initial_w)
+    if primeiro == 0 and prob_temp>100:     #maior que 50 pixels o rosto de largura
+        cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 255), 5)
+        #return frame # so pra teste
         return frame[ymin:ymax, xmin:xmax]
     else:
+        resp = s.write(str(0).encode()) # se nao tem rosto na imagem entao liga o colorido
+        s.flush()
         return frame
 
 
@@ -251,10 +255,12 @@ def main():
                     cv2.putText(frame, 'Bravo', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
                     resp = s.write(str(1).encode())
                     s.flush()
-                else:
-                    resp = s.write(str(0).encode())
-					#print('Resposta:',resp)
-                    s.flush()
+                #else:
+                    #print('Resposta:',resp)
+                    #resp = s.write(str(5).encode())
+                    #s.flush()
+                    
+                    
 
                     
                 #cv2.putText(frame, 'Normal: '+str(r2[0][0][0][0]), (15, 35), cv2.FONT_HERSHEY_COMPLEX, 0.5, (200, 10, 10), 1)
