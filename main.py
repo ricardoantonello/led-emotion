@@ -99,8 +99,8 @@ def ssd_maior_rosto(frame, result):
             ymax = int(obj[6] * initial_h)
             prob_temp = (obj[5]*initial_w-obj[3]*initial_w) # largura do rosto maior que 100 pixels
             #print(prob_temp, obj[5], obj[3], initial_w)
-    if primeiro == 0 and prob_temp>100:     #maior que 50 pixels o rosto de largura
-        cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (0, 255, 255), 5)
+    if primeiro == 0 and prob_temp>70:     #maior que 70 pixels o rosto de largura
+        cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (255, 255, 255), 4)
         #return frame # so pra teste
         return frame[ymin:ymax, xmin:xmax]
     else:
@@ -236,15 +236,15 @@ def main():
                                .format(det_time * 1000) # inference time
                 cv2.putText(frame, inf_time_message, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.5, (200, 10, 10), 1)
                 if r2[0][0][0][0]>0.6:
-                    cv2.putText(frame, 'Normal', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
+                    cv2.putText(frame, 'Normal', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (255, 255, 255), 3)
                     resp = s.write(str(5).encode()) #desliga os leds quando alguem estiver NORMAL 
                     s.flush()
                 elif r2[0][1][0][0]>0.6:
-                    cv2.putText(frame, 'Feliz', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
+                    cv2.putText(frame, 'Feliz', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 255), 3)
                     resp = s.write(str(2).encode())
                     s.flush()
                 elif r2[0][2][0][0]>0.6:
-                    cv2.putText(frame, 'Triste', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
+                    cv2.putText(frame, 'Triste', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (255, 0, 0), 3)
                     resp = s.write(str(4).encode())
                     s.flush()
                 elif r2[0][3][0][0]>0.6:
@@ -252,7 +252,7 @@ def main():
                     resp = s.write(str(3).encode())
                     s.flush()
                 elif r2[0][4][0][0]>0.6:
-                    cv2.putText(frame, 'Bravo', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 255, 0), 3)
+                    cv2.putText(frame, 'Bravo', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (0, 0, 255), 3)
                     resp = s.write(str(1).encode())
                     s.flush()
                 #else:
