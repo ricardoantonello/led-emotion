@@ -6,7 +6,7 @@
 
 # import the necessary packages
 import serial # para comunicação com arduino
-
+import subprocess # para ler temperatura do sistema via 'sensors'
 #Adaptado do exemplo da Intel OpenVino chamado 
 """People Counter."""
 """
@@ -231,9 +231,9 @@ def main():
                 det_time = time.time() - inf_start # so lê tempo depois que rodou as duas redes
                 r2 = infer_network2.get_output(cur_request_id2)
                 #print('result 2', r2)
-                    
-                inf_time_message = "Tempo de processamento: {:.3f}ms"\
-                               .format(det_time * 1000) # inference time
+                temperatura = subprocess.check_output('sensors').decode('utf-8')[55:59]    
+                inf_time_message = "Tempo de processamento: {:.3f}ms. Temperatura: {} celsius."\
+                               .format(det_time * 1000, temperatura) # inference time
                 cv2.putText(frame, inf_time_message, (15, 15), cv2.FONT_HERSHEY_COMPLEX, 0.5, (200, 10, 10), 1)
                 if r2[0][0][0][0]>0.6:
                     cv2.putText(frame, 'Normal', (15, 115), cv2.FONT_HERSHEY_PLAIN, 7.5, (255, 255, 255), 3)
